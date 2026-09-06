@@ -1,0 +1,30 @@
+# docker-compose.yml
+# Version: 3.1.1
+#
+# Works with podman-compose (pip install podman-compose) or the built-in
+# `podman compose` wrapper on recent Podman. Put this file, the Dockerfile,
+# entrypoint.sh and spamhaus_zabbix_check.py together in one directory,
+# alongside a `data/` subfolder and a `.env` file (see .env.example).
+#
+# Usage:
+#   podman-compose up -d --build      # build and start
+#   podman-compose logs -f            # watch it run
+#   podman-compose down               # stop and remove the container
+
+version: "3.8"
+
+services:
+  spamhaus-check:
+    build: .
+    image: spamhaus-check:3.1.1
+    container_name: spamhaus-check
+    restart: unless-stopped
+    environment:
+      SPAMHAUS_DQS_KEY: ${SPAMHAUS_DQS_KEY}
+      ZABBIX_SERVER: ${ZABBIX_SERVER:-192.168.1.9}
+      ZABBIX_HOST: ${ZABBIX_HOST:-spamhaus-monitor}
+      TZ: ${TZ:-Europe/Kyiv}
+      RUN_AT: ${RUN_AT:-09:00}
+      RUN_ON_START: ${RUN_ON_START:-false}
+    volumes:
+      - ./data:/data:Z
